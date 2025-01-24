@@ -28,19 +28,25 @@ def getBillingMetric():
     return _billing
 
 def sendNoticeToLine(_bill):
-    _url = 'https://notify-api.line.me/api/notify'
+    _url = 'https://api.line.me/v2/bot/message/push'
     _data = {
-      "message": _bill["message"]
+      "to": _env["LINE_USER_ID"],
+      "messages": [
+          {
+              "type": "text",
+              "text": _bill["message"]
+          }
+      ]
     }
     _header = {
-      "Authorization": "Bearer " + _env["LINE_ACCESS_TOKEN"]
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + _env["LINE_API_ACCESS_TOKEN"]
     }
 
-    print(_data)
     sendRequest(_url, _data, _header)
 
 def sendRequest(_url, _data, _header):
-    _data = urllib.parse.urlencode(_data).encode("utf-8")
+    _data = json.dumps(_data).encode("utf-8")
     _req = urllib.request.Request(_url, _data, _header, "POST")
     try:
         with urllib.request.urlopen(_req) as _res:
@@ -50,5 +56,5 @@ def sendRequest(_url, _data, _header):
         print("HTTPError: " + str(_err.code))
         print(_err)
     except urllib.error.URLError as _err:
-        print("HTTPError: " + _err.reason)
+        print("URLError: " + _err.reason)
         print(_err)
